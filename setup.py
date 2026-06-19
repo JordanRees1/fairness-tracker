@@ -42,22 +42,32 @@ def prompt_secret(label):
         print("  Empty or mismatch, try again.")
 
 
-def main():
-    if os.path.exists(DB_PATH):
-        ans = input(f"{DB_PATH} already exists. Overwrite ALL data? [y/N]: ").strip().lower()
-        if ans != "y":
-            print("Aborted.")
-            sys.exit(0)
-        os.remove(DB_PATH)
+def from_env():
+    """Read all settings from FT_* env vars (non-interactive deploy).
 
+    Required: FT_P1_PIN, FT_P2_PIN, FT_ADMIN_PW.
+    Optional: FT_P1_NAME, FT_P2_NAME, FT_FAIRNESS, FT_ADMIN_PATH.
+    """
+    missing = [v for v in ("FT_P1_PIN", "FT_P2_PIN", "FT_ADMIN_PW") if not os.environ.get(v)]
+    if missing:
+        print("Non-interactive setup missing env vars:", ", ".join(missing))
+        sys.exit(1)
+    name1 = os.environ.get("FT_P1_NAME", "Jordan")
+    name2 = os.environ.get("FT_P2_NAME", "Scarlet")
+    pin1 = os.environ["FT_P1_PIN"].strip()
+    pin2 = os.environ["FT_P2_PIN"].strip()
+    fairness = int(os.environ.get("FT_FAIRNESS", "2"))
+    admin_pw = os.environ["FT_ADMIN_PW"]
+    admin_path = os.environ.get("FT_ADMIN_PATH") or secrets.token_urlsafe(9)
+    return name1, pin1, name2, pin2, fairness, admin_pw, admin_path
+
+
+def from_prompts():
     print("\n--- Users ---")
     name1 = prompt("Person 1 name", "Jordan")
     pin1 = prompt_pin(f"{name1}'s PIN")
     name2 = prompt("Person 2 name", "Scarlet")
     pin2 = prompt_pin(f"{name2}'s PIN")
-    if pin1 == pin2:
-        print("\nThe two PINs must be different (the PIN is how the app tells you apart).")
-        sys.exit(1)
 
     print("\n--- Settings ---")
     while True:
@@ -71,8 +81,30 @@ def main():
 
     print("\n--- Admin ---")
     admin_pw = prompt_secret("Admin password")
-    default_path = secrets.token_urlsafe(9)
-    admin_path = prompt("Admin URL token (the /admin/<token> path)", default_path)
+    admin_path = prompt("Admin URL token (the /admin/<token> path)", secrets.token_urlsafe(9))
+    return name1, pin1, name2, pin2, fairness, admin_pw, admin_path
+
+
+def main():
+    noninteractive = os.environ.get("FT_NONINTERACTIVE") == "1"
+
+    if os.path.exists(DB_PATH):
+        if noninteractive:
+            os.remove(DB_PATH)
+        else:
+            ans = input(f"{DB_PATH} already exists. Overwrite ALL data? [y/N]: ").strip().lower()
+            if ans != "y":
+                print("Aborted.")
+                sys.exit(0)
+            os.remove(DB_PATH)
+
+    name1, pin1, name2, pin2, fairness, admin_pw, admin_path = (
+        from_env() if noninteractive else from_prompts()
+    )
+
+    if pin1 == pin2:
+        print("\nThe two PINs must be different (the PIN is how the app tells you apart).")
+        sys.exit(1)
 
     con = sqlite3.connect(DB_PATH)
     with open(SCHEMA_PATH) as f:

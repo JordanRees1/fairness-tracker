@@ -66,6 +66,19 @@ sudo tailscale serve --bg 8000       # serves it at https://<pi-hostname>.<tailn
 Then tighten the bind to localhost in `fairness.service`
 (`--bind 127.0.0.1:8000`) so only `tailscale serve` exposes it.
 
+### Non-interactive setup (optional)
+For scripted/remote deploys, seed the database from environment variables
+instead of prompts:
+
+```bash
+FT_NONINTERACTIVE=1 FT_P1_PIN=1234 FT_P2_PIN=5678 FT_ADMIN_PW='your-pw' \
+  FT_P1_NAME=Jordan FT_P2_NAME=Scarlet FT_FAIRNESS=2 \
+  ./venv/bin/python setup.py
+```
+
+Required: `FT_P1_PIN`, `FT_P2_PIN`, `FT_ADMIN_PW`. Optional: names, `FT_FAIRNESS`,
+`FT_ADMIN_PATH` (a random token is generated if omitted).
+
 ## Admin panel
 - See both counters and adjust them ±1 (e.g. to correct a mistake).
 - Reset both to 0.
