@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="admin">
+  <header class="admin-head">
+    <h1>Admin</h1>
+    <form method="post" action="{{ url_for('admin_logout', token=token) }}">
+      <button class="link" type="submit">Log out</button>
+    </form>
+  </header>
+
+  <section class="panel">
+    <h2>Counters</h2>
+    <table class="counts">
+      {% for u in users %}
+      <tr>
+        <td class="name">{{ u['name'] }}</td>
+        <td class="num">{{ u['count'] }}</td>
+        <td class="adj">
+          <form method="post" action="{{ url_for('admin_adjust', token=token) }}">
+            <input type="hidden" name="user" value="{{ u['key'] }}">
+            <button class="chip" name="delta" value="-1" type="submit">&minus;1</button>
+            <button class="chip" name="delta" value="1" type="submit">+1</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+    <form method="post" action="{{ url_for('admin_reset', token=token) }}"
+          onsubmit="return confirm('Reset both counters to 0?');">
+      <button class="btn danger" type="submit">Reset both to 0</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Fairness parameter</h2>
+    <form class="inline" method="post" action="{{ url_for('admin_config', token=token) }}">
+      <input class="num-input" type="number" name="fairness_param" min="1" value="{{ F }}">
+      <button class="btn" type="submit">Save</button>
+    </form>
+    <p class="hint">Max lead one person can have. Currently {{ F }}.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Activity log</h2>
+    <table class="log">
+      <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Result</th><th>Counts</th></tr></thead>
+      <tbody>
+      {% for e in events %}
+        <tr>
+          <td class="mono">{{ e['ts'] }}</td>
+          <td>{{ e['who'] }}</td>
+          <td>{{ e['action'] }}</td>
+          <td class="r-{{ e['result'].split('+')[0].split('-')[0] }}">{{ e['result'] }}</td>
+          <td class="mono">{{ e['counts'] }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="hint">No activity yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</main>
+{% endblock %}

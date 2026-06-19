@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block body_class %}{{ 'bg-green' if allowed else 'bg-red' }}{% endblock %}
+{% block content %}
+<main class="result">
+  {% if not allowed %}
+    <div class="verdict">No</div>
+    <p class="sub">Not yet &mdash; wait for things to even out.</p>
+    <a class="link light" href="{{ url_for('home') }}">Back</a>
+  {% elif did %}
+    <div class="verdict">Logged &check;</div>
+    <p class="sub">Counted it.</p>
+    <a class="link light" href="{{ url_for('home') }}">Back</a>
+  {% else %}
+    <div class="verdict">Yes</div>
+    <form method="post" action="{{ url_for('did') }}">
+      <button class="btn ghost" type="submit">I did it</button>
+    </form>
+    <a class="link light" href="{{ url_for('home') }}">Cancel</a>
+  {% endif %}
+</main>
+{% endblock %}

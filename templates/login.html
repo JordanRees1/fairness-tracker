@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block body_class %}screen-center{% endblock %}
+{% block content %}
+<main class="card">
+  <h1>Fairness</h1>
+  <form method="post" action="{{ url_for('login') }}">
+    <input class="pin" type="password" name="pin" inputmode="numeric"
+           pattern="[0-9]*" autocomplete="off" placeholder="Enter your PIN" autofocus>
+    <button class="btn" type="submit">Enter</button>
+  </form>
+</main>
+{% endblock %}
