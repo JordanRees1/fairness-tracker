@@ -6,10 +6,10 @@ Wants=network-online.target
 [Service]
 # Adjust User and paths to match your Pi.
 User=user
-WorkingDirectory=/home/pi/fairness
-Environment=FAIRNESS_DB=/home/pi/fairness/fairness.db
+WorkingDirectory=/home/user/fairness
+Environment=FAIRNESS_DB=/home/user/fairness/fairness.db
 # 1 worker keeps memory low and avoids SQLite write contention.
-ExecStart=/home/pi/fairness/venv/bin/gunicorn --workers 1 --bind 0.0.0.0:8000 app:app
+ExecStart=/home/user/fairness/venv/bin/gunicorn --workers 1 --bind 0.0.0.0:8000 app:app
 Restart=on-failure
 RestartSec=3
 
